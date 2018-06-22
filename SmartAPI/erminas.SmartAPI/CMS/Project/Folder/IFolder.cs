@@ -137,7 +137,24 @@ namespace erminas.SmartAPI.CMS.Project.Folder
             Guid linkedProjectGuid;
             if (_xmlElement.TryGetGuid("linkedprojectguid", out linkedProjectGuid))
             {
-                var project = Project.Session.ServerManager.Projects.GetByGuid(linkedProjectGuid);
+                IProject project = null;
+                if (Project.Session.CurrentUser.ModuleAssignment.IsServerManager)
+                {
+                    project= Project.Session.ServerManager.Projects.GetByGuid(linkedProjectGuid);
+                }
+                else
+                {
+                    try
+                    {
+                        project = Project.Session.CurrentUser.Projects.GetByProjectGuid(linkedProjectGuid).Project;
+                    }
+                    catch
+                    {
+                        // if user is not server manager and does not have access to the linked project
+                        // leave it to null
+                    }
+                }
+
 
                 // project could be null if the linked project is not available (broken folder)
                 // in that case do not try to set the linked folder
