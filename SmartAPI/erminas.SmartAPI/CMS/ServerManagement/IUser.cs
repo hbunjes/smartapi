@@ -165,6 +165,7 @@ namespace erminas.SmartAPI.CMS.ServerManagement
         private string _navigationType;
         private string _password;
         private int _preferredEditor;
+        private string _preferredEditorString;
         private IDialogLocale _userInterfaceLanguage;
         private UserPofileChangeRestrictions _userPofileChangeRestrictions;
         private bool _isUnknownUser;
@@ -332,9 +333,15 @@ namespace erminas.SmartAPI.CMS.ServerManagement
             set { _password = value; }
         }
 
+        [Obsolete("In newer version the preferred editor can be a string. In this case this is set to -1. Please use PreferredEditorString to always get a correct value.")]
         public int PreferredEditor
         {
             get { return LazyLoad(ref _preferredEditor); }
+        }
+
+        public string PreferredEditorString
+        {
+            get { return LazyLoad(ref _preferredEditorString); }
         }
 
         public bool IsUnknownUser { get{
@@ -391,7 +398,16 @@ namespace erminas.SmartAPI.CMS.ServerManagement
             InitIfPresent(ref _id, "id", int.Parse);
             InitIfPresent(ref _maxLevel, "maxlevel", int.Parse);
             InitIfPresent(ref _maxSessionCount, "maxlogin", int.Parse);
-            InitIfPresent(ref _preferredEditor, "preferrededitor", int.Parse);
+            try
+            {
+                InitIfPresent(ref _preferredEditor, "preferrededitor", int.Parse);
+            }
+            catch
+            {
+                // Preferrededitor can now also be a string. In this case set the int to -1.
+                _preferredEditor = -1;
+            }
+            _preferredEditorString = _xmlElement.GetAttributeValue("preferrededitor");
             _fullname = _xmlElement.GetAttributeValue("fullname");
             _description = _xmlElement.GetAttributeValue("description");
             _email = _xmlElement.GetAttributeValue("email");
